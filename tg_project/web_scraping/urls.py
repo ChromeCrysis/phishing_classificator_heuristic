@@ -12,5 +12,6 @@ urlpatterns = [
     path('god_url_add', views.calc_len),
     path('whois', views.whois),
     path('training', views.urls_training),
-    path('test', test_method.tester)
+    path('test', test_method.tester),
+    path('engine_execution', views.engine_execution),
 ]

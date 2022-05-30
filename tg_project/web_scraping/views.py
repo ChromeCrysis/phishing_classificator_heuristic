@@ -187,3 +187,12 @@ def urls_training():
     arvores.fit(Xtr, ytr)
     c = arvores.predict(Xval)
     accuracy = arvores.score(Xval, yval)
+
+def engine_execution(request):
+    if request.method == 'GET':
+
+        context = {
+            'score' : main(request.GET.get('url'))
+        }
+
+        return HttpResponse(json.dumps(context), content_type='application/json')
