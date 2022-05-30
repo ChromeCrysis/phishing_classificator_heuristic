@@ -1,0 +1,35 @@
+
+{
+    "manifest_version": 2,
+    "name": "Speed Analyze URL",
+    "short_name" : "Speed Analyze",
+    "description": "Analise de url",
+    "version": "0.0.1",
+    "storage": {
+        "managed_schema": "schema.json"
+    },
+    "content_scripts": [
+        {
+          "matches": ["<all_urls>"],
+          "js": ["scripts/jquery-3.6.0.js","chromeUtils.js","content.js"]
+        }
+    ],
+    "background": {
+        "page": "background/background.html"
+    },
+    "options_ui": {
+        "open_in_tab": true,
+        "page": "options/index.html"
+    },
+    "browser_action":{
+        "default_title": "Speed Analyze URL",
+        "default_popup": "popup/index.html"
+    },
+    "permissions":["tabs", "storage", "http://localhost:8000/tg/engine_execution"],
+    "icons": {
+        "128": "128.png"
+    },
+    "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+
+
+}
