@@ -10,7 +10,7 @@ from django.shortcuts import render
 from requests import get
 import json
 from django.db.models import Count
-from .models import BadURL, GodURL
+from .models import BadURL, GodURL, Urls
 from django.contrib import messages
 from datetime import datetime
 
@@ -18,10 +18,14 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-#Machine learning libs
+# Machine learning libs
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.preprocessing import OneHotEncoder
+from sklearn import preprocessing
+from sklearn.compose import ColumnTransformer
+
 
 
 # Create your views here.
@@ -169,23 +173,17 @@ def whois(request):
         lista = str(ips_verificados).replace('[', '(').replace(']',')')
         WHERE = f'verified_whois = false AND ip NOT IN {lista} '
 
-
-def export_to_csv(requests):
-    bad_urls = BadURL.objects.all()
-    good_urls = GodURL.objects.all()
-    response = HttpResponse('text/csv')
-    response['Content-Disposition'] = 'attachment'; filename ='bad_urls.csv'
-    writer = csv.writer(response)
-    writer.writerow('Url', 'Ip', 'Date_create', 'Country_code', 'Target', 'Asn', 'Isp', 'Phishtank_id', 'Phishstats_id')
-
 def urls_training():
-    bad_urls = BadURL.objects.all()
-    good_urls = GodURL.objects.all()
-    X = bad_urls
-    y = good_urls
-    Xtr, Xval, ytr, yval = train_test_split(X, y, test_size=0.5, random_state=0)
+    # Pre processamento
+    urls = Urls.objects.all()
+    vurls = urls.values_list()
+    urls_np = np.core.records.fromrecords(vurls, names=[f.name for f in Urls._meta.fields])
+    label_encoder = preprocessing.LabelEncoder()
+    urls_encoded = label_encoder(urls_np)
+    X_encoded = urls_encoded
+    y = urls_np['is_phishing']
+    Xtr, Xval, ytr, yval = train_test_split(X_encoded, y, test_size=0.5, random_state=0)
     arvores = RandomForestClassifier(random_state=0, n_estimators=40, criterion='entropy', n_jobs=-1)
     arvores.fit(Xtr, ytr)
     c = arvores.predict(Xval)
-    np.sqrt(mean_squared_error(yval, c))
-
+    accuracy = arvores.score(Xval, yval)
